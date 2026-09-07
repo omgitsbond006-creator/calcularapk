@@ -1,0 +1,23 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Android
+android/local.properties
+android/.gradle/
+android/app/build/
+android/key.properties
+
+# Signing material — NEVER commit these
+*.jks
+*.keystore
+upload-keystore.jks
+keystore_base64.txt
+KEYSTORE_INFO.txt
+
+# IDE
+.idea/
+*.iml
