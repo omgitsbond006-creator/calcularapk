@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,22 +23,30 @@ jobs:
         with:
           channel: stable
 
+      - name: Regenerate Android platform folder fresh
+        run: |
+          rm -rf android
+          flutter create --platforms=android --org com.calcular .
+
+      - name: Apply Calcular customizations
+        run: python3 ci/patch_android.py
+
       - name: Decode signing keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > upload-keystore.jks
 
       - name: Write key.properties
         run: |
-          cat > android/key.properties <<EOF
+          cat > android/key.properties <<EOF2
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyAlias=upload
           storeFile=../upload-keystore.jks
-          EOF
+          EOF2
 
       - run: flutter pub get
 
-      -  run: flutter build appbundle --release --android-skip-build-dependency-validation
-      - run: flutter build apk --release --android-skip-build-dependency-validation
+      - run: flutter build appbundle --release
+      - run: flutter build apk --release
 
       - uses: actions/upload-artifact@v4
         with:
@@ -46,3 +57,12 @@ jobs:
         with:
           name: calcular-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Publish build as a GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: "Calcular build ${{ github.run_number }}"
+          files: |
+            build/app/outputs/bundle/release/app-release.aab
+            build/app/outputs/flutter-apk/app-release.apk
