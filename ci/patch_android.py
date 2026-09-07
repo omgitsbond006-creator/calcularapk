@@ -11,12 +11,13 @@ content = re.sub(r'namespace\s*=?\s*"[^"]+"', 'namespace = "com.calcular.app"', 
 content = re.sub(r'applicationId\s*=?\s*"[^"]+"', 'applicationId = "com.calcular.app"', content, count=1)
 
 if is_kts:
+    imports = 'import java.util.Properties\nimport java.io.FileInputStream\n\n'
     signing_block = '''
 
-val keystoreProperties = java.util.Properties()
+val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -38,6 +39,7 @@ android {
     }
 }
 '''
+    content = imports + content + signing_block
 else:
     signing_block = '''
 
@@ -66,8 +68,8 @@ android {
     }
 }
 '''
+    content = content + signing_block
 
-content = content + signing_block
 open(gradle_path, "w").write(content)
 print("patched", gradle_path)
 
