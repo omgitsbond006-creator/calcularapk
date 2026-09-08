@@ -25,7 +25,7 @@ android {
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String
             keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
+            storeFile = rootProject.file("../upload-keystore.jks")
             storePassword = keystoreProperties["storePassword"] as String
         }
     }
@@ -54,7 +54,7 @@ android {
         release {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storeFile rootProject.file('../upload-keystore.jks')
             storePassword keystoreProperties['storePassword']
         }
     }
