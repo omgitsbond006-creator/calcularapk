@@ -85,3 +85,13 @@ for density in ["mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi"]:
     if os.path.exists(src):
         shutil.copyfile(src, dst)
         print("copied icon", dst)
+
+proguard_path = "android/app/proguard-rules.pro"
+if not os.path.exists(proguard_path):
+    with open(proguard_path, "w") as f:
+        f.write(
+            "# Calcular uses only the Flutter framework with no platform\n"
+            "# channels or reflection-dependent packages, so no custom\n"
+            "# keep rules are required.\n"
+        )
+    print("created", proguard_path)
