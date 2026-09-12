@@ -1,4 +1,4 @@
-import os, re, shutil
+import os, re, shutil, glob
 
 gradle_path = "android/app/build.gradle"
 is_kts = False
@@ -95,3 +95,36 @@ if not os.path.exists(proguard_path):
             "# keep rules are required.\n"
         )
     print("created", proguard_path)
+
+target_namespace = "com.calcular.app"
+target_path_parts = target_namespace.split(".")
+
+main_activity_files = glob.glob("android/app/src/main/kotlin/**/MainActivity.kt", recursive=True) + \
+                       glob.glob("android/app/src/main/java/**/MainActivity.java", recursive=True)
+
+for old_path in main_activity_files:
+    ext = old_path.rsplit(".", 1)[1]
+    src_root = "android/app/src/main/kotlin" if "kotlin" in old_path else "android/app/src/main/java"
+    new_dir = os.path.join(src_root, *target_path_parts)
+    new_path = os.path.join(new_dir, f"MainActivity.{ext}")
+
+    content = open(old_path).read()
+    content = re.sub(r'^package\s+[\w.]+', f'package {target_namespace}', content, count=1, flags=re.MULTILINE)
+
+    if os.path.abspath(old_path) != os.path.abspath(new_path):
+        os.makedirs(new_dir, exist_ok=True)
+        with open(new_path, "w") as f:
+            f.write(content)
+        os.remove(old_path)
+        d = os.path.dirname(old_path)
+        while d and d != src_root:
+            try:
+                os.rmdir(d)
+            except OSError:
+                break
+            d = os.path.dirname(d)
+        print(f"moved MainActivity: {old_path} -> {new_path}")
+    else:
+        with open(new_path, "w") as f:
+            f.write(content)
+        print(f"MainActivity already at correct path: {new_path}")
